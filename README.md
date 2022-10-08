@@ -11,7 +11,7 @@
  ---------------------------------------------------------------------
  Getting Started -
 
- Either use this link: https://transcendent-brigadeiros-21724f.netlify.app/ to run the project in the browser or run the project from your code editor.
+ Either use this link: https://wealth-tracker.netlify.app/ to run the project in the browser or run the project from your code editor.
 
  ---------------------------------------------------------------------
  Usage -
