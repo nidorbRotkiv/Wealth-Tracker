@@ -4,17 +4,17 @@
  Created by: nidorbRotkiv
 
  ---------------------------------------------------------------------
- Description -
+ # Description -
 
  Tracks your wealth in different currencies and helps you keep track of your progress
 
  ---------------------------------------------------------------------
- Getting Started -
+ # Getting Started -
 
  Either use this link: https://wealth-tracker.netlify.app/ to run the project in the browser or run the project from your code editor.
 
  ---------------------------------------------------------------------
- Usage -
+ # Usage -
 
  You first get to see a demo of the app visualizing demo data.
  The nav-bar consists of 6 options.
