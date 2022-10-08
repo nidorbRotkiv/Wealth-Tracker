@@ -30,6 +30,8 @@
  "Remove Marked Datapoint" will remove the month (datapoint) that you have clicked on.
 
  "Reset Chart" will remove all data and allows you to start from scratch.
+ 
+ You can zoom by using your fingers or scroll wheel. You can also choose to look at certian datapoints by draging your cursor over them.
 
  ---------------------------------------------------------------------
  Distributed under the MIT License. See LICENSE.txt for more information.
