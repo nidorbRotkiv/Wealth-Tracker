@@ -1,0 +1,107 @@
+body {
+  background-color: white;
+}
+
+#myChart {
+  margin-bottom: 2%;
+}
+
+.dropbtnAddData {
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+#resetButton {
+  color: lightcoral;
+}
+
+#resetButton:hover {
+  color: red;
+}
+
+.currencyLine {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+  margin-top: 1%;
+  margin-bottom: 1%;
+}
+
+#currencys {
+  margin-left: 1%;
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+}
+
+@media only screen and (max-width: 750px) {
+  .info {
+    display: contents;
+    justify-content: center;
+  }
+}
+
+.chartContainer {
+  margin-left: 6%;
+  margin-right: 6%;
+  margin-top: 1%;
+}
+
+.title {
+  margin-left: 2%;
+  margin-right: 2%;
+  cursor: default;
+  font-family: "Cinzel", serif;
+}
+
+input {
+  margin: 2px;
+}
+
+label {
+  margin: 2px;
+}
+
+#addButton {
+  margin-top: 10px;
+}
+
+.nav-link {
+  padding-left: 10px;
+  margin-left: 10px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {
+  background-color: #ddd;
+}
+
+.show {
+  display: block;
+}
