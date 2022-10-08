@@ -1,12 +1,12 @@
 # Wealth-Tracker
 
  ---------------------------------------------------------------------
- Created by: nidorbRotkiv
+ Created by: nidorbRotkiv.
 
  ---------------------------------------------------------------------
  # Description
 
- Tracks your wealth in different currencies and helps you keep track of your progress
+ Tracks your wealth in different currencies and helps you keep track of your progress.
 
  ---------------------------------------------------------------------
  # Getting Started
