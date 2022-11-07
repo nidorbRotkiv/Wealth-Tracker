@@ -45,7 +45,7 @@ const currencys = {
 //let currencyData = null;
 
 //var myHeaders = new Headers();
-//myHeaders.append("apikey", "PZZUg25dRZrrNsgcYhD3gIYUTMM2lfRO");
+//myHeaders.append("apikey", "{API-KEY}");
 
 //var requestOptions = {
 //  method: 'GET',
