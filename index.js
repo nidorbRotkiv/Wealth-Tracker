@@ -74,7 +74,7 @@ let diffFromMarker = null;
 
 let startSumGoal;
 
-isNaN(parseInt(sessionStorage.getItem("startSumGoal"))) ? startSumGoal = 1000000 : startSumGoal = parseInt(sessionStorage.getItem("startSumGoal"));
+isNaN(parseInt(sessionStorage.getItem("startSumGoal"))) ? startSumGoal = 100000 : startSumGoal = parseInt(sessionStorage.getItem("startSumGoal"));
 
 let percentageGoal;
 
@@ -86,9 +86,9 @@ for (const currency in currencys) {
   arrOfCurrencys.push(currencys[currency]);
 }
 
-if (window.screen.width < 1000) {
-  canvas.height = 275;
-}
+// if (window.screen.width < 1000) {
+//   canvas.height = 275;
+// }
 
 function handleDatapointRadius() {
   if(datapoints.length < 6) {
@@ -311,10 +311,16 @@ function formatToCurrency(value, currency) {
   if (currency === currencys.gold) {
     return round(value, 2) + " " + currencys.gold.postfix;
   }
-  return new Intl.NumberFormat(currency.currencyFormat, {
+
+  let currencyFormat = new Intl.NumberFormat(currency.currencyFormat, {
     style: "currency",
     currency: currency.name,
   }).format(value);
+
+  if(currency === currencys.sek) {
+    return currencyFormat.slice(0, -6) + " kr";
+}
+  return currencyFormat;
 }
 
 function getPercentageDiff(newVal, oldVal) {
@@ -368,7 +374,7 @@ function updateCurrentTotalValue(currency, dataArray) {
   diff > 0 ? sign = "+" : sign = "";
     document.getElementById(
       "diffToGoal"
-    ).innerHTML = `Difference from marked datapoint is: ${sign}${formatToCurrency(
+    ).innerHTML = `Difference from marked point: ${sign}${formatToCurrency(
       diff,
       currency
     )}`;
@@ -380,7 +386,7 @@ function updateCurrentTotalValue(currency, dataArray) {
     diff > 0 ? sign = "+" : sign = "";
   document.getElementById(
     "diffToGoal"
-  ).innerHTML = `Difference from goal is: ${sign}${formatToCurrency(
+  ).innerHTML = `Difference from goal: ${sign}${formatToCurrency(
     diff,
     currency
   )}`;
@@ -630,6 +636,16 @@ const config = {
   type: "line",
   data: data,
   options: { 
+    elements: {
+      line: {
+          borderWidth: 1.5
+    }
+  },
+    onHover: (event, chartElement) => {
+      event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'crosshair';
+  },
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: { 
       zoom: {
         zoom: {
@@ -684,7 +700,7 @@ const config = {
           font: {
             family: 'Helvetica Neue',
             size: 15,
-            lineHeight: 1.2,
+            lineHeight: 1,
           },
           padding: {top: 15, left: 0, right: 0, bottom: 0}
         },
