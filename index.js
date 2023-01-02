@@ -18,7 +18,7 @@ const currencys = {
     name: "USD",
     prefix: "$",
     postfix: "dollar",
-    value: 0.094,
+    value: sessionStorage.getItem("ValueUSD") || 0.095,
     currencyFormat: "en-US",
   },
   sek: {
@@ -30,7 +30,7 @@ const currencys = {
   euro: {
     name: "EUR",
     postfix: "€",
-    value: 0.092,
+    value: sessionStorage.getItem("ValueEURO") || 0.089,
     currencyFormat: "de-DE",
   },
   gold: {
@@ -40,27 +40,41 @@ const currencys = {
   },
 };
 
-//async function getValueOfCurrency(currencyName) {
+async function getRate() {
 
-//let currencyData = null;
+let currencyData = null;
 
-//var myHeaders = new Headers();
-//myHeaders.append("apikey", "{API-KEY}");
+var myHeaders = new Headers();
+myHeaders.append("apikey", "PZZUg25dRZrrNsgcYhD3gIYUTMM2lfRO");
 
-//var requestOptions = {
-//  method: 'GET',
-//  redirect: 'follow',
-//  headers: myHeaders
-//};
+var requestOptions = {
+ method: 'GET',
+ redirect: 'follow',
+ headers: myHeaders
+};
 
-//await fetch("https://api.apilayer.com/exchangerates_data/latest?symbols=EUR%2C%20USD&base=SEK", requestOptions)
-//  .then(response => response.text())
-//  .then(result => currencyData = JSON.parse(result))
-//  .catch(error => console.log('error', error));
+await fetch("https://api.apilayer.com/exchangerates_data/latest?symbols=EUR%2C%20USD&base=SEK", requestOptions)
+ .then(response => response.text())
+ .then(result => currencyData = JSON.parse(result))
+ .catch(error => console.log('error', error));
 
-//  return currencyData.rates[currencyName];
+ return currencyData.rates;
 
-//}
+}
+if (
+  sessionStorage.getItem("ValueUSD") === null ||
+  sessionStorage.getItem("ValueEURO") === null
+) {
+  (async () => {
+    const rates = await getRate();
+
+    currencys.usd.value = rates.USD;
+    sessionStorage.setItem("ValueUSD", rates.USD);
+
+    currencys.euro.value = rates.EUR;
+    sessionStorage.setItem("ValueEURO", rates.EUR);
+  })();
+}
 
 let clicked = [];
 
@@ -74,11 +88,15 @@ let diffFromMarker = null;
 
 let startSumGoal;
 
-isNaN(parseInt(sessionStorage.getItem("startSumGoal"))) ? startSumGoal = 100000 : startSumGoal = parseInt(sessionStorage.getItem("startSumGoal"));
+isNaN(parseInt(sessionStorage.getItem("startSumGoal")))
+  ? (startSumGoal = 100000)
+  : (startSumGoal = parseInt(sessionStorage.getItem("startSumGoal")));
 
 let percentageGoal;
 
-isNaN(parseInt(sessionStorage.getItem("percentageGoal"))) ? percentageGoal = 20 : percentageGoal = parseInt(sessionStorage.getItem("percentageGoal"));
+isNaN(parseInt(sessionStorage.getItem("percentageGoal")))
+  ? (percentageGoal = 20)
+  : (percentageGoal = parseInt(sessionStorage.getItem("percentageGoal")));
 
 // functions
 
@@ -86,15 +104,15 @@ for (const currency in currencys) {
   arrOfCurrencys.push(currencys[currency]);
 }
 
-// if (window.screen.width < 1000) {
-//   canvas.height = 275;
-// }
-
 function handleDatapointRadius() {
-  if(datapoints.length < 6) {
+  if (datapoints.length < 6) {
     config.options.hitRadius = 30;
     config.options.radius = 10;
     config.options.hoverRadius = 15;
+  } else if(datapoints.length < 12) {
+    config.options.hitRadius = 20;
+    config.options.radius = 5;
+    config.options.hoverRadius = 10;
   } else {
     config.options.hitRadius = 15;
     config.options.radius = 2;
@@ -104,23 +122,26 @@ function handleDatapointRadius() {
 
 function saveSessionData() {
   let arr = "";
-  arr+=(`"year","month","amount"`);
+  arr += `"year","month","amount"`;
   for (let i = 0; i < datapoints.length; i++) {
-    arr+=("\n");
-    arr+=(labels[i].substring(5, 7));
-    arr+=(",");
-    arr+=(labels[i].substring(0, 2));
-    arr+=(",");
-    arr+=(datapoints[i]);
+    arr += "\n";
+    arr += labels[i].substring(5, 7);
+    arr += ",";
+    arr += labels[i].substring(0, 2);
+    arr += ",";
+    arr += datapoints[i];
   }
   tabledata = arr;
-  sessionStorage.setItem('csvData', tabledata);
+  sessionStorage.setItem("csvData", tabledata);
 }
 
 function updateData() {
   chart.config.data.datasets[0].data = datapoints;
   chart.config.data.labels = labels;
-  chart.config.data.datasets[1].data = generateGoalData(startSumGoal, percentageGoal);
+  chart.config.data.datasets[1].data = generateGoalData(
+    startSumGoal,
+    percentageGoal
+  );
   handleDatapointRadius();
   changeCurrency(selectedCurrency);
   updateCurrentTotalValue(selectedCurrency, chart.config.data.datasets[0].data);
@@ -132,12 +153,14 @@ function updateData() {
 
 function changeGoal() {
   startSumGoal = parseInt(document.getElementById("startAmountField").value);
-  if(isNaN(startSumGoal)) {
+  if (isNaN(startSumGoal)) {
     startSumGoal = datapoints[0];
   }
-  sessionStorage.setItem('startSumGoal', startSumGoal);
-  percentageGoal = parseInt(document.getElementById("increasePerYearField").value);
-  sessionStorage.setItem('percentageGoal', percentageGoal);
+  sessionStorage.setItem("startSumGoal", startSumGoal);
+  percentageGoal = parseInt(
+    document.getElementById("increasePerYearField").value
+  );
+  sessionStorage.setItem("percentageGoal", percentageGoal);
   updateData();
 }
 
@@ -149,17 +172,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function handleSelectCurrency(ev) {
   let selected = ev.target;
-  let currency = arrOfCurrencys.find(
+  selectedCurrency = arrOfCurrencys.find(
     (currency) => currency.name == selected.value.toUpperCase()
   );
-  selectedCurrency = currency;
-  //if(selectedCurrency == currencys.euro) {
-  //  currencys.euro.value = await getValueOfCurrency("EUR");
-  //}
-  //if(selectedCurrency == currencys.usd) {
-  //  currencys.usd.value = await getValueOfCurrency("USD");
-  //}
-  changeCurrency(currency);
+  changeCurrency(selectedCurrency);
   data.datasets[0].backgroundColor = getRandomColor();
   updateData();
 }
@@ -218,7 +234,10 @@ async function fillDataFromCsv() {
 
 function addDataFromForm() {
   const date = document.getElementById("dateField").value;
-  if (parseInt(date.substring(0,4)) < 2000 || parseInt(date.substring(0,4)) > 2099) {
+  if (
+    parseInt(date.substring(0, 4)) < 2000 ||
+    parseInt(date.substring(0, 4)) > 2099
+  ) {
     Swal.fire({
       icon: "error",
       title: "Year must be between 2000 and 2099!",
@@ -240,38 +259,46 @@ function addDataFromForm() {
   if (!isNaN(parseInt(document.getElementById("amountField").value))) {
     value = parseInt(document.getElementById("amountField").value);
   }
- //scenario 0 (chart is empty)
-  if(datapoints.length === 0) {
+  //scenario 0 (chart is empty)
+  if (datapoints.length === 0) {
     datapoints.push(value);
     labels.push(formatedDate);
     clicked.push(0);
   }
- // scenario 1 (date is smaller than the smallest date)
-  if(year < labels[0].substring(5,7) || (year == labels[0].substring(5,7) && month < labels[0].substring(0,2))) {
+  // scenario 1 (date is smaller than the smallest date)
+  if (
+    year < labels[0].substring(5, 7) ||
+    (year == labels[0].substring(5, 7) && month < labels[0].substring(0, 2))
+  ) {
     labels.unshift(formatedDate);
     datapoints.unshift(value);
     clicked.push(0);
-  } 
+  }
   // scenario 2 (date is bigger than the biggest date)
-  else if(year > labels[labels.length-1].substring(5,7) || (year == labels[labels.length-1].substring(5,7) && month > labels[labels.length-1].substring(0,2))) {
+  else if (
+    year > labels[labels.length - 1].substring(5, 7) ||
+    (year == labels[labels.length - 1].substring(5, 7) &&
+      month > labels[labels.length - 1].substring(0, 2))
+  ) {
     labels.push(formatedDate);
     datapoints.push(value);
     clicked.push(0);
   } else {
-    for(let i = 0; i < labels.length; i++) {
+    for (let i = 0; i < labels.length; i++) {
       // scenario 3 (date is the same as another date)
-      if(labels[i] == formatedDate) {
+      if (labels[i] == formatedDate) {
         datapoints[i] = value;
         break;
       }
-      if(i < 1) {
+      if (i < 1) {
         continue;
-      } 
-      const date = year+month;
-      const prevDate = labels[i-1].substring(5,7) + labels[i-1].substring(0,2);
-      const nextDate = labels[i].substring(5,7) + labels[i].substring(0,2);
+      }
+      const date = year + month;
+      const prevDate =
+        labels[i - 1].substring(5, 7) + labels[i - 1].substring(0, 2);
+      const nextDate = labels[i].substring(5, 7) + labels[i].substring(0, 2);
       // scenario 4 (date is between two dates)
-       if(date > prevDate && date < nextDate) {
+      if (date > prevDate && date < nextDate) {
         labels.splice(i, 0, formatedDate);
         datapoints.splice(i, 0, value);
         clicked.push(0);
@@ -317,9 +344,9 @@ function formatToCurrency(value, currency) {
     currency: currency.name,
   }).format(value);
 
-  if(currency === currencys.sek) {
+  if (currency === currencys.sek) {
     return currencyFormat.slice(0, -6) + " kr";
-}
+  }
   return currencyFormat;
 }
 
@@ -338,7 +365,7 @@ function updateLines() {
 }
 
 function updateCurrentTotalValue(currency, dataArray) {
-  //checking if values should be displayed
+  // checking if values should be displayed
   if (dataArray.length < 1) {
     document.getElementById("diffFromLastMonth").innerHTML = "";
     document.getElementById("diffToGoal").innerHTML = "";
@@ -349,47 +376,53 @@ function updateCurrentTotalValue(currency, dataArray) {
   let currentTotalValue = dataArray[dataArray.length - 1];
   let lastMonthsTotalValue = dataArray[dataArray.length - 2];
 
-  const percentDiff = getPercentageDiff(currentTotalValue, lastMonthsTotalValue);
+  const percentDiff = getPercentageDiff(
+    currentTotalValue,
+    lastMonthsTotalValue
+  );
 
   let sign = "";
-  if (percentDiff > 0) {sign = "+";}
+  if (percentDiff > 0) {
+    sign = "+";
+  }
 
   document.getElementById(
     "diffFromLastMonth"
   ).innerHTML = `Difference from last month: ${sign}${percentDiff} %`;
 
-  
   const currentTotalValueText = `Total net wealth: ${formatToCurrency(
     currentTotalValue,
     currency
   )}`;
 
-  document.getElementById("currentTotalValue").innerHTML = currentTotalValueText;
+  document.getElementById("currentTotalValue").innerHTML =
+    currentTotalValueText;
 
   let diff;
 
-  // marked datapoint  
-  if(clicked.includes(1) && clicked[datapoints.length-1] != 1) {
+  // marked datapoint
+  if (clicked.includes(1) && clicked[datapoints.length - 1] != 1) {
     diff = currentTotalValue - dataArray[clicked.indexOf(1)];
-  diff > 0 ? sign = "+" : sign = "";
+    diff > 0 ? (sign = "+") : (sign = "");
     document.getElementById(
       "diffToGoal"
     ).innerHTML = `Difference from marked point: ${sign}${formatToCurrency(
       diff,
       currency
     )}`;
-  } 
-  // no marked datapoint  
+  }
+  // no marked datapoint
   else {
     diff =
-    currentTotalValue - data.datasets[1].data[data.datasets[1].data.length - 1];
-    diff > 0 ? sign = "+" : sign = "";
-  document.getElementById(
-    "diffToGoal"
-  ).innerHTML = `Difference from goal: ${sign}${formatToCurrency(
-    diff,
-    currency
-  )}`;
+      currentTotalValue -
+      data.datasets[1].data[data.datasets[1].data.length - 1];
+    diff > 0 ? (sign = "+") : (sign = "");
+    document.getElementById(
+      "diffToGoal"
+    ).innerHTML = `Difference from goal: ${sign}${formatToCurrency(
+      diff,
+      currency
+    )}`;
   }
 }
 
@@ -427,7 +460,7 @@ function generateGoalData(startSum, percentageGoal) {
   if (datapoints.length === 0) {
     return [];
   }
-  
+
   const firstDate = labels[0];
   const lastDate = labels[labels.length - 1];
 
@@ -571,7 +604,7 @@ const clickableLines = {
     const xCursor = args.event.x;
     const yCursor = args.event.y;
     if (args.event.type === "click") {
-      //xy cordinates of each dataset
+      // xy cordinates of each dataset
       const xyData = chart._metasets[0].data;
       const clickRadius = config.options.hoverRadius * 2;
 
@@ -623,7 +656,7 @@ const clickableLines = {
       }
     }
     const xyData = chart._metasets[0].data;
-    if(clicked.includes(1)) {
+    if (clicked.includes(1)) {
       const drawLine = new Line(xyData[clicked.indexOf(1)].x);
       drawLine.draw(ctx);
     }
@@ -635,33 +668,36 @@ let delayed;
 const config = {
   type: "line",
   data: data,
-  options: { 
+  options: {
     elements: {
       line: {
-          borderWidth: 1.5
-    }
-  },
+        borderWidth: 1.5,
+      },
+    },
     onHover: (event, chartElement) => {
-      event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'crosshair';
-  },
+      event.native.target.style.cursor = chartElement[0]
+        ? "pointer"
+        : "crosshair";
+    },
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { 
+    plugins: {
       zoom: {
         zoom: {
           drag: {
             enabled: true,
-            threshold: 15
+            threshold: 15,
           },
           wheel: {
-            enabled: true
+            enabled: true,
           },
           pinch: {
-            enabled: true
-          }, mode: 'x',
-        }
-      }
-  },
+            enabled: true,
+          },
+          mode: "x",
+        },
+      },
+    },
     interaction: {
       mode: "index",
     },
@@ -685,24 +721,29 @@ const config = {
       // adds currency to yAxes
       yAxes: {
         ticks: {
-          callback: function(value, index, ticks) {
-            const formatedNum = Chart.Ticks.formatters.numeric.apply(this, [value, index, ticks]);
-            return selectedCurrency === currencys.usd ? `${currencys.usd.prefix} ${formatedNum}` : `${formatedNum} ${selectedCurrency.postfix}`;
-        }
-       }
+          callback: function (value, index, ticks) {
+            const formatedNum = Chart.Ticks.formatters.numeric.apply(this, [
+              value,
+              index,
+              ticks,
+            ]);
+            return selectedCurrency === currencys.usd
+              ? `${currencys.usd.prefix} ${formatedNum}`
+              : `${formatedNum} ${selectedCurrency.postfix}`;
+          },
+        },
       },
-      //
       xAxes: {
         title: {
           display: true,
-          text: 'Month / Year',
-          color: '#626262',
+          text: "Month / Year",
+          color: "#626262",
           font: {
-            family: 'Helvetica Neue',
+            family: "Helvetica Neue",
             size: 15,
             lineHeight: 1,
           },
-          padding: {top: 15, left: 0, right: 0, bottom: 0}
+          padding: { top: 15, left: 0, right: 0, bottom: 0 },
         },
         ticks: {
           minRotation: 35,
